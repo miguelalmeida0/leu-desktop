@@ -1,0 +1,9 @@
+artifacts
+tests
+docs
+scripts
+.git
+.env*
+playwright.config.ts
+README.md
+SECURITY.md

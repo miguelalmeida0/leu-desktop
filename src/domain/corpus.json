@@ -1,0 +1,158 @@
+[
+  {
+    "id": "react",
+    "title": "React Notes",
+    "category": "Frontend",
+    "cover": "ocean",
+    "pages": [
+      {
+        "heading": "A clearer model for React",
+        "text": "A component describes the interface for a particular\n set of props, state and context. Rendering calculates\n that description; committing applies the necessary\n changes to the screen.\n\n\n        Inputs                  Render        Commit\n\n\n\n\n Keep rendering pure: do not change unrelated objects,\n start requests or subscribe to events while calculating\n the interface.\n\n Reading question: what belongs in rendering, and what\n belongs in an event handler?"
+      },
+      {
+        "heading": "State is a snapshot",
+        "text": "Setting state requests another render. It does not\n change the state variable inside the event handler that\n is already running.\n setCount(count + 1);\n console.log(count);\n // Still the current render's value.\n\n\n When the next value depends on the previous queued\n value, use a functional updater.\n setCount(previous => previous + 1);\n setCount(previous => previous + 1);\n\n\n The updater receives the previous pending value, not a\n magically mutated local variable."
+      },
+      {
+        "heading": "Keys describe identity",
+        "text": "A stable key helps React match an item to its previous\n instance within a list of siblings. Reordering should\n not make one item inherit the local state of another.\n items.map(item => (\n   <Row key={item.id} item={item} />\n ));\n\n\n An array index can be a poor key when items move,\n are inserted or removed. A freshly generated random\n key also destroys continuity between renders.\n\n Practice: explain why editing a row can reveal a bad key\n choice."
+      },
+      {
+        "heading": "Return to the source",
+        "text": "These are original, short sample notes, included so\n you can try Shelf without importing anything. They\n are not a complete React course.\n\n Use a bookmark to keep this page. Select a useful\n sentence and highlight it, or add a note describing it in\n your own words.\n Primary reading: react.dev/learn/render-and-commit\n react.dev/learn/state-as-a-snapshot\n react.dev/learn/queueing-a-series-of-state-updates\n react.dev/learn/rendering-lists\n\n Your highlights belong to you. Shelf keeps them\n separate from the original PDF."
+      }
+    ],
+    "kind": "PDF",
+    "file": "/samples/React Notes.pdf"
+  },
+  {
+    "id": "system",
+    "title": "System Design",
+    "category": "Backend",
+    "cover": "sand",
+    "pages": [
+      {
+        "heading": "Start with the job",
+        "text": "Before drawing components, establish who uses the\n system, what they need to do, and what failure would\n mean. An architecture solves a particular set of\n constraints.\n\n\n         Need                   Constraint    Decision\n\n\n\n\n For a personal PDF reader, local access, data integrity\n and fast navigation may matter more than\n multi-region availability. Do not pay for complexity\n that the task does not require.\n\n A useful question: what must still work when the\n internet does not?"
+      },
+      {
+        "heading": "Make data ownership clear",
+        "text": "Give each responsibility an owner. The interface\n presents state. An application service coordinates a\n workflow. Persistence commits durable changes.\n\n\n         View                   Use case       Storage\n\n\n\n\n Passing a database object through every screen makes\n boundaries difficult to change. Passing an immutable\n document summary keeps rendering separate from\n storage details.\n\n Identify which layer should know about file paths, and\n which should only know about a document identifier."
+      },
+      {
+        "heading": "Caching is a tradeoff",
+        "text": "A cache avoids repeating work, but introduces a\n second representation that can become stale. Decide\n what is authoritative, how entries are invalidated and\n how much memory the cache may use.\n\n PDF thumbnails are derived data. If a thumbnail\n disappears, recreate it. Original documents and\n private annotations are not disposable caches.\n\n\n       Original                 Thumbnail     Display\n\n\n\n\n Ask: can this information be recreated without asking\n the user to do the work again?"
+      },
+      {
+        "heading": "Design the failure path",
+        "text": "An import is not complete when a preview appears. It\n is complete when the required data has been safely\n stored and the operation has been acknowledged.\n\n A recoverable design considers full storage,\n interrupted writes, duplicate requests and corrupted\n input. Error messages must tell the user what\n happened without claiming that missing work was\n saved.\n This is original sample material illustrating general engineering reasoning.\n The architecture and recovery semantics of this app are documented in the\n source package.\n\n Review exercise: sketch a save operation that can fail at\n any step without overwriting the original."
+      }
+    ],
+    "kind": "PDF",
+    "file": "/samples/System Design.pdf"
+  },
+  {
+    "id": "javascript",
+    "title": "JavaScript Deep Dive",
+    "category": "Frontend",
+    "cover": "ivory",
+    "pages": [
+      {
+        "heading": "Know the return shape",
+        "text": "Choosing an array method starts with the shape you\n need back. One item, a new array and a yes-or-no\n answer are different results.\n items.find(test);      // item or undefined\n items.filter(test); // array\n items.some(test);      // boolean\n items.every(test);     // boolean\n\n\n Find selects the first matching value. Filter creates an\n array containing matching values. Some asks whether\n a match exists; every asks whether all visited items\n pass.\n\n A boolean cannot be followed by .map(). Check the\n return value before chaining methods."
+      },
+      {
+        "heading": "Return is not decoration",
+        "text": "With an arrow function, an expression body returns its\n expression. A block body needs an explicit return\n statement.\n const a = [1, 2].map(n => n * 2);\n // [2, 4]\n\n\n const b = [1, 2].map(n => { n * 2; });\n // [undefined, undefined]\n\n\n The multiplication in the second example happens,\n but its value is not returned by the callback. Map\n collects the callback results.\n\n Close the document and explain this bug out loud\n before checking the code again."
+      },
+      {
+        "heading": "A closure keeps access",
+        "text": "A closure is a function together with access to its\n surrounding lexical environment. The function can\n keep accessing that environment after the outer call\n has returned.\n function counter() {\n     let value = 0;\n     return () => {\n       value += 1;\n       return value;\n     };\n }\n const next = counter();\n next(); // 1\n next(); // 2\n\n\n Two separate calls to counter() create two independent\n environments."
+      },
+      {
+        "heading": "Change a value, keep the original",
+        "text": "To update an item without mutating the source array,\n create a new array and a new object for the item that\n changes.\n const updated = games.map(game =>\n   game.title === \"Eclipse\"\n      ? { ...game, favorite: true }\n      : game\n );\n\n\n Unchanged objects are reused here. This is a shallow\n update, not a deep clone of every nested object.\n Primary reading: developer.mozilla.org/en-US/docs/Web/JavaScript/Referen\n ce/Global_Objects/Array\n developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures"
+      }
+    ],
+    "kind": "PDF",
+    "file": "/samples/JavaScript Deep Dive.pdf"
+  },
+  {
+    "id": "patterns",
+    "title": "Design Patterns",
+    "category": "Backend",
+    "cover": "rose",
+    "pages": [
+      {
+        "heading": "Make the boundary visible",
+        "text": "A pattern is useful when it makes a recurring design\n problem easier to understand. It is not a requirement\n to put every application behind layers of indirection.\n\n\n       Contract                 Adapter       System\n\n\n\n\n For a PDF reader, a small interface for storing library\n metadata lets the application service work with a disk\n implementation or a test double.\n\n A new engineer should know what a module owns\n before reading its implementation."
+      },
+      {
+        "heading": "One reason to change",
+        "text": "Keep rendering, workflow decisions and durable\n storage separate. A typography change should not\n require editing a file-import transaction.\n\n Small files help, but file length alone does not\n guarantee good boundaries. A module should expose\n a coherent contract and avoid leaking details that\n callers do not need.\n\n Try naming a module without using the words manager,\n helper or utils."
+      },
+      {
+        "heading": "Depend on a contract",
+        "text": "An application workflow can depend on a storage\n contract instead of constructing a specific database or\n file store. The composition root supplies the concrete\n implementation.\n protocol LibraryPersistence {\n     func load() throws -> Library\n     func save(_ library: Library) throws\n }\n\n\n This keeps tests focused. A storage failure can be\n introduced deliberately without filling the device or\n corrupting real user files.\n\n Test that an unsuccessful save does not leak\n uncommitted in-memory state."
+      },
+      {
+        "heading": "Use patterns sparingly",
+        "text": "Every abstraction introduces a concept that the next\n engineer must learn. Add the boundary when it\n protects a responsibility, enables an important test or\n isolates a volatile dependency.\n\n Keep the simplest implementation that meets the real\n constraints. An offline personal library does not need\n a distributed backend to look or feel well made.\n This sample explains the design approach used in Shelf. The architecture\n and decision records in the source package describe the actual\n implementation.\n\n What can you remove without weakening a guarantee\n the user depends on?"
+      }
+    ],
+    "kind": "PDF",
+    "file": "/samples/Design Patterns.pdf"
+  },
+  {
+    "id": "cs",
+    "title": "Computer Science Essentials",
+    "category": "Study",
+    "cover": "slate",
+    "pages": [
+      {
+        "heading": "A model is a simplification",
+        "text": "A useful model keeps the details that affect a decision\n and leaves out those that do not. It should help you\n reason, not merely give something a more impressive\n name.\n\n For example, describing a stack as last-in, first-out\n helps predict which item is removed next. The\n description is useful before deciding how to store the\n stack.\n\n\n        Push A                  Push B         Pop B\n\n\n\n\n Use a tiny concrete example before introducing an\n abstraction."
+      },
+      {
+        "heading": "Growth, not a stopwatch",
+        "text": "Time complexity describes how work grows with\n input size under a stated model. It does not predict the\n exact time on a particular device.\n\n A linear scan may inspect every element. A binary\n search repeatedly narrows a sorted search space. The\n latter relies on a precondition: the data must have a\n compatible ordering.\n\n Ask whether preparation and sorting costs are included\n in the analysis."
+      },
+      {
+        "heading": "References and copies",
+        "text": "Two variables can refer to the same mutable object.\n Changing that object through one variable is visible\n through the other reference.\n const a = { score: 1 };\n const b = a;\n b.score = 2;\n console.log(a.score); // 2\n\n\n Copying an outer object with spread does not\n automatically copy its nested objects. The boundary\n between shared and copied data matters.\n\n Draw two arrows pointing to the same object. The bug\n becomes easier to see."
+      },
+      {
+        "heading": "Use the right structure",
+        "text": "The important question is not which data structure is\n most sophisticated. It is which operations must be\n cheap, which ordering matters and what guarantees\n the caller needs.\n\n A library may keep its original files by stable\n identifier while maintaining a separate searchable\n metadata representation. Different representations\n serve different operations.\n Original sample material. JavaScript reference semantics: developer.mozilla.\n org/en-US/docs/Web/JavaScript/Guide/Working_with_objects\n\n Before optimizing, list the three operations your\n application performs most often."
+      }
+    ],
+    "kind": "PDF",
+    "file": "/samples/Computer Science Essentials.pdf"
+  },
+  {
+    "id": "interviews",
+    "title": "Coding Interviews",
+    "category": "Study",
+    "cover": "sage",
+    "pages": [
+      {
+        "heading": "Reason before typing",
+        "text": "State the expected input and output. Ask about empty\n input, duplicates, ordering and invalid values before\n choosing an algorithm.\n\n\n        Clarify                 Example        Implement\n\n\n\n\n A small example is useful because it makes hidden\n assumptions visible. It is easier to correct the contract\n before coding than to retrofit it into a finished\n implementation.\n\n What does a successful result look like for an empty\n input?"
+      },
+      {
+        "heading": "Trace the program",
+        "text": "Read a short program in execution order. Track the\n value produced by each expression and the value\n returned by each function.\n const numbers = [1, 2, 3];\n const kept = numbers.filter(n => n > 1);\n const doubled = kept.map(n => n * 2);\n console.log(doubled); // [4, 6]\n\n\n A useful trace records both type and value. A result\n can look semantically related to the task while having\n the wrong shape for the next operation.\n\n Try the same reasoning with no matching numbers.\n Does your chain still work?"
+      },
+      {
+        "heading": "Test the boundary",
+        "text": "Test cases should probe the assumptions, not merely\n confirm the example used while writing the code.\n Include the smallest input, a repeated value and a case\n that challenges ordering.\n function firstEven(values) {\n     return values.find(value => value % 2 === 0);\n }\n firstEven([]);          // undefined\n firstEven([3, 5]);      // undefined\n firstEven([3, 4, 2]); // 4\n\n\n Explain what the caller should do when a result is\n undefined."
+      },
+      {
+        "heading": "Explain the tradeoff",
+        "text": "A technically correct solution is only part of the\n conversation. Explain the assumptions, the chosen\n approach and the cost as the input grows.\n\n Avoid claiming that one implementation is faster\n without defining the input, runtime and measurement.\n Simpler code can be the better default until a\n demonstrated bottleneck requires more work.\n These are original sample practice notes. No scoring, generated questions or\n interview simulation is running inside Shelf.\n\n Write one note: what would make you change your\n chosen solution?"
+      }
+    ],
+    "kind": "PDF",
+    "file": "/samples/Coding Interviews.pdf"
+  }
+]
